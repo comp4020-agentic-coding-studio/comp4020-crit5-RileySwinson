@@ -1,70 +1,36 @@
 # Process overview
 
-<!-- TEMPLATE: this file is a shape to fill in, not a form. Replace everything
-     in it with your own overview, and delete this comment — `pnpm
-     check:evidence` will remind you if it's still here. -->
-
-A reading-guide to how the work came together --- a map to your process, not an
-essay about it. Markers read this file and follow its citations; they don't
-trawl the repo for evidence you didn't point at, so if a moment mattered, cite
-it.
-
-This file is the shape; the course site's
-[assessment page](https://comp.anu.edu.au/courses/comp4020-agentic-coding-studio/topics/assessment/#what-you-submit)
-is the requirement, and its
-[word counts](https://comp.anu.edu.au/courses/comp4020-agentic-coding-studio/topics/assessment/#word-counts)
-cover every deliverable.
-
 ## What I built
 
-One paragraph: the thing, and the idea behind it.
+**Sounding** — a puzzle game played by echo. A click sends out a ripple of dots
+that stops dead at geometry, so you never see the level, only where it blocked
+you. It's a flat slice of something larger: "an idea i've had for a 3d game for
+some time based around sound. you step and see the world as you step."
+
+One caveat: this was built in a single session outside the repo and brought in
+at the end, so the history below is the port, not the making of it.
 
 ## The moments that mattered
 
-Three or four for an assignment; fewer is fine for a weekly prototype. Keep the
-list short so each moment has room to do all four jobs:
+**A single ping can't draw a shape.** The first level drew a solid letter and
+pinged it; the render was one enormous shadow with no letter in it, because from
+a point source you only ever see a near edge. The obvious fix was to let stopped
+dots linger as an outline — exactly what the design rules out. Instead the
+wavefront became a deep *band*: rings short of the geometry are whole, rings
+past it are bitten, and the boundary through the band is the near edge. I found
+this by rendering frames in headless Chrome and looking, not by reading code.
+[`f6f15d9`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit5-RileySwinson/commit/f6f15d9)
 
-1. **what happened** --- the problem, or the thing that went wrong
-2. **what you did instead of the obvious thing** --- the call you made, and why
-   it beat the obvious one
-3. **how you knew it was right** --- the check you ran, the viewport you looked
-   at, what you read before accepting the diff
-4. **the citation** --- a commit or commit range, a `CLAUDE.md` change, a check
-   that went from red to green, a prompt paired with the commit it produced
+**Slots in the level 3 slab** — the change that came from playing.
 
-Jobs 2 and 3 are the ones the repo can't tell a reader on its own, so they're
-where the marks are. The strongest moments are the ones where a correction
-landed in the **harness** --- the standards and checks your work has to satisfy
---- rather than in a retry: a rule added to `CLAUDE.md`, a check wired up, an
-attempt thrown away. Retrying until it passes is the routine case, and changing
-what the work runs against is the skilled one.
+> make level 3 have small gaps in the large cube that the dots, when clicking on
+> the outside, can go through. put two on the left and right sides.
 
-Cite each moment as a link whose text is the commit hash or range and whose
-target is this repo's commit or compare URL, so a reader clicks straight to the
-evidence:
-
-- one commit: [`a1b2c3d`](https://github.com/YOUR-ORG/YOUR-REPO/commit/a1b2c3d)
-- a range:
-  [`a1b2c3d...e4f5a6b`](https://github.com/YOUR-ORG/YOUR-REPO/compare/a1b2c3d...e4f5a6b)
-
-To pair a prompt with the commit it produced, quote the prompt (curated, not a
-full transcript) next to the citation:
-
-> the prompt, verbatim
-
-Screenshots are welcome where one carries the verification better than a
-sentence does. Commit the file to this repo and link it with a **relative**
-path, which is what makes it render on GitHub: `![alt text](docs/before.png)`.
-Images don't count towards the word count and don't replace the citation.
-
-## Before you ship
-
-`pnpm check:evidence` verifies your citations resolve to real commits, that a
-reflection entry the marker reads is in `reflections/`, and that your
-`CLAUDE.md` is there --- before a marker ever opens the file. It checks that
-your map is traceable, not that it is good: the marker judges whether your
-small, deliberately chosen set of moments shows real judgement and reflection. A
-green check is not a substitute for that curation.
-
-Images aren't checked: unlike a citation whose SHA doesn't resolve, a broken
-image is visible the moment this file is rendered on GitHub.
+It "seemed confusing just clicking and NOTHING happens until you get to the very
+specific spot where it's permitted. it just seemed like one big cube." Not a
+marker on the floor, and not dropping outside pings — two slots, so an outside
+ping gets a beam in. The first cut dead-ended on the digit `7`, which has no
+left-hand stroke, so each slot now finds a height where its own digit has one.
+The correction landed in the harness: a test fires a real ping at each slot and
+asserts it reaches the cavity, and that one which misses is still stopped.
+[`f9efcff`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit5-RileySwinson/commit/f9efcff)
