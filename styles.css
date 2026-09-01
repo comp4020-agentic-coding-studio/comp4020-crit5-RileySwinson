@@ -1,16 +1,315 @@
-body {
+:root {
+  --ground-r: #f6e3e3;
+  --ground-g: #e0f0e3;
+  --ground-b: #dfe7f8;
+  --ground-k: #efedea;
+  --ink: #14141a;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
   margin: 0;
-  padding: 2rem;
-  font-family: system-ui, sans-serif;
-  line-height: 1.6;
-  color: #1a1a1a;
+  overflow: hidden;
+  /* The stage shifts a few px when it shakes; the page behind it has to be
+     the same colour or the shake shows as a bright sliver at the edge. */
+  background: var(--ground-r);
+  transition: background 480ms ease;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  -webkit-tap-highlight-color: transparent;
 }
 
-main {
-  max-width: 40rem;
-  margin: 0 auto;
+#stage {
+  position: fixed;
+  inset: 0;
+  background: var(--ground-r);
+  transition: background 480ms ease;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+#stage[data-channel="g"] { background: var(--ground-g); }
+#stage[data-channel="b"] { background: var(--ground-b); }
+html[data-channel="g"], html[data-channel="g"] body { background: var(--ground-g); }
+html[data-channel="b"], html[data-channel="b"] body { background: var(--ground-b); }
+#stage[data-channel="k"] { background: var(--ground-k); }
+html[data-channel="k"], html[data-channel="k"] body { background: var(--ground-k); }
+
+/* Pinging from inside solid geometry: nothing gets out, and the level says so. */
+#stage.bump { animation: bump 260ms ease; }
+@keyframes bump {
+  0%, 100% { transform: translate(0, 0); }
+  15%      { transform: translate(-6px, 2px); }
+  32%      { transform: translate(5px, -3px); }
+  50%      { transform: translate(-4px, -2px); }
+  68%      { transform: translate(3px, 2px); }
+  85%      { transform: translate(-2px, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  @keyframes bump {
+    0%, 100% { transform: translate(0, 0); }
+    50%      { transform: translate(-2px, 0); }
+  }
 }
 
-a {
-  color: #0b5fff;
+#stage.solved {
+  animation: drift 12s linear infinite;
+}
+@keyframes drift {
+  0%   { background: var(--ground-r); }
+  33%  { background: var(--ground-g); }
+  66%  { background: var(--ground-b); }
+  100% { background: var(--ground-r); }
+}
+
+#ink, #notes {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+#notes { pointer-events: none; }
+
+#counter {
+  position: absolute;
+  top: max(18px, env(safe-area-inset-top));
+  left: max(18px, env(safe-area-inset-left));
+  height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  border: 2px solid rgba(20, 20, 26, 0.28);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.35);
+  color: rgba(20, 20, 26, 0.7);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  user-select: none;
+  z-index: 2;
+}
+
+#budget {
+  position: absolute;
+  top: max(18px, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 2;
+}
+
+#clicks, #restart {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  border: 2px solid rgba(20, 20, 26, 0.28);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.35);
+  color: rgba(20, 20, 26, 0.7);
+  font-family: inherit;
+  font-size: 19px;
+  font-weight: 600;
+  user-select: none;
+}
+#budget[hidden], #restart[hidden], #counter[hidden] { display: none; }
+#clicks.low { border-color: #14141a; color: #14141a; }
+#restart {
+  cursor: pointer;
+  border-color: #14141a;
+  background: #14141a;
+  color: #fff;
+  letter-spacing: 0.04em;
+}
+
+#win {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 900ms ease;
+  z-index: 3;
+}
+#win[hidden] { display: none; }
+#win.on { opacity: 1; }
+#win span {
+  padding: 22px 40px;
+  border: 3px solid var(--ink);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.55);
+  color: var(--ink);
+  font-size: 44px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-indent: 0.18em;
+}
+
+#wipe {
+  position: absolute;
+  inset: 0;
+  background: #14141a;
+  transform: translateX(-101%);
+  pointer-events: none;
+  z-index: 3;
+}
+#wipe.on { animation: wipe 640ms ease-in-out; }
+@keyframes wipe {
+  0%        { transform: translateX(-101%); }
+  44%, 56%  { transform: translateX(0); }
+  100%      { transform: translateX(101%); }
+}
+
+.controls {
+  position: absolute;
+  top: max(18px, env(safe-area-inset-top));
+  right: max(18px, env(safe-area-inset-right));
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  z-index: 2;
+}
+
+.swatches, .tools { display: flex; gap: 12px; }
+
+.swatch {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  opacity: 0.5;
+  box-shadow: inset 0 0 0 0 rgba(255, 255, 255, 0.9);
+  transition: opacity 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+}
+.swatch[data-channel="r"] { background: #d13a3a; }
+.swatch[data-channel="g"] { background: #2f9b4d; }
+.swatch[data-channel="b"] { background: #3a63d4; }
+.swatch[data-channel="k"] { background: #14141a; }
+
+.swatch.on {
+  opacity: 1;
+  transform: scale(1.16);
+  box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.92);
+}
+
+.tool {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 2px solid rgba(20, 20, 26, 0.28);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.35);
+  color: rgba(20, 20, 26, 0.62);
+  cursor: pointer;
+  transition: border-color 180ms ease, background 180ms ease, color 180ms ease;
+}
+.tool svg { width: 22px; height: 22px; display: block; }
+.tool.on {
+  border-color: #14141a;
+  background: #14141a;
+  color: #fff;
+}
+
+.answer {
+  position: absolute;
+  left: 50%;
+  bottom: max(40px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
+#slots {
+  display: flex;
+  gap: 14px;
+  padding: 10px 16px;
+  border: 2px solid rgba(20, 20, 26, 0.42);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.28);
+  cursor: text;
+  transition: border-color 220ms ease, background 220ms ease;
+}
+#slots:focus-within { border-color: rgba(20, 20, 26, 0.8); }
+#slots.right {
+  border-color: rgba(20, 20, 26, 0.9);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.slot {
+  width: 46px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  border-bottom: 3px solid rgba(20, 20, 26, 0.32);
+}
+
+.slot.cue { animation: cue 1.1s ease-in-out infinite; }
+@keyframes cue {
+  0%, 100% { border-bottom-color: rgba(20, 20, 26, 0.32); }
+  50%      { border-bottom-color: rgba(20, 20, 26, 0.9); }
+}
+
+#slots.wrong { animation: shake 380ms ease; }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-9px); }
+  40% { transform: translateX(9px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(5px); }
+}
+
+.solved #slots .slot {
+  border-bottom-color: rgba(20, 20, 26, 0.9);
+  transition: border-bottom-color 600ms ease;
+}
+
+#entry {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  font: inherit;
+  cursor: text;
+}
+#entry:focus { outline: none; }
+
+@media (max-width: 480px) {
+  .slot { width: 38px; height: 40px; font-size: 26px; }
+  #counter, #clicks, #restart { height: 40px; font-size: 13px; padding: 0 9px; }
+  .controls { gap: 12px; }
+  #win span { font-size: 30px; padding: 18px 28px; }
+  .swatch { width: 40px; height: 40px; }
+}
+
+/* The heading and the nav landmark are for screen readers and crawlers. The
+   brief allows the game a name; what it rules out is telling anyone how to
+   play, and neither of these does that. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
